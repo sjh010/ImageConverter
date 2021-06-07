@@ -42,9 +42,6 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 		
 		ConvertRequest request = new ConvertRequest();
 		
-		Gson gson = new Gson();
-//		request = gson.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
-		
 		request = JsonUtils.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
 
 		ChannelFuture channelFuture = ctx.write(Unpooled.EMPTY_BUFFER);
