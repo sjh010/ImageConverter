@@ -2,13 +2,28 @@ package com.mobileleader.image.model;
 
 import java.util.List;
 
+/**
+ * 이미지 변환 response
+ */
 public class ConvertResponse {
 
 	private String jobId; // 변환파일 고유아이디
 	
 	private String errorCode; // 변환결과 에러코드
 	
+	private String desRootPath; // 변환결과 저장폴더 경로
+	
 	private List<String> desNames; // 변환결과 파일명목록
+	
+	public ConvertResponse() {
+		super();
+	}
+
+	
+	public ConvertResponse(String errorCode) {
+		super();
+		this.errorCode = errorCode;
+	}
 
 	public String getJobId() {
 		return jobId;
@@ -26,6 +41,14 @@ public class ConvertResponse {
 		this.errorCode = errorCode;
 	}
 
+	public String getDesRootPath() {
+		return desRootPath;
+	}
+
+	public void setDesRootPath(String desRootPath) {
+		this.desRootPath = desRootPath;
+	}
+
 	public List<String> getDesNames() {
 		return desNames;
 	}
@@ -37,9 +60,10 @@ public class ConvertResponse {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ConvertResult [jobId=").append(jobId).append(", errorCode=").append(errorCode)
-				.append(", desNames=").append(desNames).append("]");
+		builder.append("ConvertResponse [jobId=").append(jobId).append(", errorCode=").append(errorCode)
+				.append(", desRootPath=").append(desRootPath).append(", desNames=").append(desNames).append("]");
 		return builder.toString();
 	}
+
 	
 }

@@ -17,6 +17,7 @@ import com.mobileleader.image.model.ConvertResponse;
 import com.mobileleader.image.service.ImageConvertService;
 import com.mobileleader.image.socket.client.ImageConvertOutboundClient;
 import com.mobileleader.image.type.JobType;
+import com.mobileleader.image.util.JsonUtils;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -71,11 +72,12 @@ public class ConvertDaemon {
 					log.info(requestQueue.toString());
 					ConvertRequest request = requestQueue.poll();
 					
-					log.info("Request : {}", request.toString());
+					log.info("Request : {}", JsonUtils.ObjectPrettyPrint(request));
 					
 					ChannelFuture channelFuture = channelFutureMap.get(request.getJobId());
 					
 					ConvertResponse response = imageConvertService.convert(request);
+					response.setDesRootPath(request.getDesRootPath());
 					
 					if (JobType.REALTIME.getCode().equalsIgnoreCase(request.getJobType())) {
 						try {
@@ -90,7 +92,6 @@ public class ConvertDaemon {
 						try {
 							imageConvertOutboundClient.sendResponse(response);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else {

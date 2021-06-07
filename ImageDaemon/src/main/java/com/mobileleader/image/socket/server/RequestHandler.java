@@ -10,6 +10,7 @@ import com.mobileleader.image.deamon.ConvertDaemon;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
 import com.mobileleader.image.type.JobType;
+import com.mobileleader.image.util.JsonUtils;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -39,12 +40,12 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 		
 		ByteBuf mBuf = (ByteBuf) msg;
 		
-		log.info(ctx.channel().toString());
-		
 		ConvertRequest request = new ConvertRequest();
 		
 		Gson gson = new Gson();
-		request = gson.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
+//		request = gson.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
+		
+		request = JsonUtils.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
 
 		ChannelFuture channelFuture = ctx.write(Unpooled.EMPTY_BUFFER);
 		
@@ -52,10 +53,7 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 		if ("Y".equalsIgnoreCase(request.getThreadChangeYn()) && request.getThreadChangeCount() > 0) {
 			convertDaemon.changeCoreThreadCount(request.getThreadChangeCount());
 			
-			ConvertResponse response = new ConvertResponse();
-			response.setErrorCode("200");
-			
-			channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(new Gson().toJson(response), CharsetUtil.UTF_8));
+			channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse("200")), CharsetUtil.UTF_8));	
 			channelFuture.addListener(ChannelFutureListener.CLOSE);
 		} else { // 이미지 변환 요청
 			// 요청 큐에 삽입
@@ -63,18 +61,10 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 			
 			if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {
 				// status code 추기
-				ConvertResponse response = new ConvertResponse();
-				response.setErrorCode("200");
-				
-				channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(new Gson().toJson(response), CharsetUtil.UTF_8));	
+				channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse("200")), CharsetUtil.UTF_8));	
 				channelFuture.addListener(ChannelFutureListener.CLOSE);
 			}
-		}
-		
-		
-		
-
-		
+		}		
 	}
 
 	@Override

@@ -5,8 +5,8 @@ package com.mobileleader.image.type;
  */
 public enum JobType {
 
-    REALTIME("REALTIME", "실시간", 0),
-    BATCH("BATCH", "배치", 1);
+    REALTIME("R", "실시간", 0),
+    BATCH("B", "배치", 1);
 
     private String code;
 

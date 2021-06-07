@@ -3,6 +3,7 @@ package com.mobileleader.image.service;
 import java.io.File;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ObjectUtils;
@@ -59,6 +60,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 	// get fileName from FullPath
 	protected String getFileNameFromDesPath(String fullPath, String rootPath) {
+//		return FilenameUtils.getName(fullPath);
 		return fullPath.replace(rootPath, "");
 	}
 

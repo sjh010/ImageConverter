@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.mobileleader.image.type.JobType;
 
+/**
+ * 이미지 변환 request
+ */
 public class ConvertRequest implements Comparable<ConvertRequest> {
 
 	private String jobId;		// 변환파일단위 고유아이디
