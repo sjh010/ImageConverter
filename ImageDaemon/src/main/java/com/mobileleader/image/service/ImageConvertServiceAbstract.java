@@ -32,6 +32,9 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 	private ImageIOJNI imageIOJNI = new ImageIOJNI();
 
+	/**
+	 * 파일 리스트 삭제
+	 */
 	protected boolean deleteFilesFromPath(List<String> filePaths) {
 		for (int i = 0; i < filePaths.size(); i++) {
 			File f = new File(filePaths.get(i));
@@ -43,7 +46,9 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		return true;
 	}
 
-	// JNI errorCode to imgConServer errorCode
+	/**
+	 * JNI 에러코드 -> 변환 데몬 에러코드 
+	 */
 	protected String getErrorCode(int index) {
 		log.info("Module result : {}", index);
 		
@@ -60,8 +65,8 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 	// get fileName from FullPath
 	protected String getFileNameFromDesPath(String fullPath, String rootPath) {
-//		return FilenameUtils.getName(fullPath);
-		return fullPath.replace(rootPath, "");
+		return FilenameUtils.getName(fullPath);
+//		return fullPath.replace(rootPath, "");
 	}
 
 	/**
@@ -71,14 +76,14 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @return 페이지 수
 	 * @throws ImageConvertException
 	 */
-	protected int getImageTotalCount(String src) throws ImageConvertException {
+	protected int getPageTotalCount(String src) throws ImageConvertException {
 		int totalCount = 0;
 		int fileType = imageIOJNI.getFileType_FILE(src);
-
-		if (fileType == FileType.TIFF.getCode()) {
+		
+		if (FileType.TIFF.getCode() == fileType) { // TIFF
 			totalCount = imageIOJNI.getTIFFTotalPage_FILE(src);
 		} else if (fileType == FileType.PDF.getCode()) {
-			throw new ImageConvertException(ErrorCodeType.INVALID_FILE_TYPE.getCode());
+			totalCount = InziPDF.getPDFPageCount(src);
 		} else if (fileType > 0) {
 			// 파일 형식이 TIFF, PDF가 아닌경우 -> 페이지 수 1
 			totalCount = 1;
@@ -102,25 +107,25 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @return 페이지 수
 	 * @throws ImageConvertException
 	 */
-	protected int getPdfTotalCount(String src) throws ImageConvertException {
-		int totalCount = 0;
-		int fileType = imageIOJNI.getFileType_FILE(src);
-		if (fileType == FileType.PDF.getCode()) {
-			totalCount = InziPDF.getPDFPageCount(src);
-		} else if (fileType > 0) {
-			throw new ImageConvertException(ErrorCodeType.INVALID_FILE_TYPE.getCode());
-		} else {
-			throw new ImageConvertException(getErrorCode(fileType));
-		}
-
-		if (totalCount <= 0) {
-			throw new ImageConvertException(getErrorCode(totalCount));
-		}
-
-		logger.info("getPdfPageCount : {}", totalCount);
-
-		return totalCount;
-	}
+//	protected int getPdfTotalCount(String src) throws ImageConvertException {
+//		int totalCount = 0;
+//		int fileType = imageIOJNI.getFileType_FILE(src);
+//		if (fileType == FileType.PDF.getCode()) {
+//			totalCount = InziPDF.getPDFPageCount(src);
+//		} else if (fileType > 0) {
+//			throw new ImageConvertException(ErrorCodeType.INVALID_FILE_TYPE.getCode());
+//		} else {
+//			throw new ImageConvertException(getErrorCode(fileType));
+//		}
+//
+//		if (totalCount <= 0) {
+//			throw new ImageConvertException(getErrorCode(totalCount));
+//		}
+//
+//		logger.info("getPdfPageCount : {}", totalCount);
+//
+//		return totalCount;
+//	}
 
 	/**
 	 * 이미지(또는 이미지리스트) -> PDF 변환
@@ -141,7 +146,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	}
 
 	/**
-	 * 이미지 -> 이미지 변환 마스킹 정보 있을 시, 마스킹 수행
+	 * 이미지 -> 이미지 변환 (마스킹 정보 있을 시, 마스킹 수행)
 	 * 
 	 * @param src        변환할 이미지 경로
 	 * @param des        변환 결과 이미지 저장 경로
@@ -177,7 +182,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			throw new ImageConvertException(ErrorCodeType.INVALID_RST_TYPE.getCode());
 		}
 
-		if (!ObjectUtils.isEmpty(maskingInfos)) {
+		if (!ObjectUtils.isEmpty(maskingInfos)) { // 이미지 마스킹
 			for (IcMaskingInfo maskInfo : maskingInfos) {
 				result = imageIOJNI.maskImage_FILE(src, maskInfo.getX(), maskInfo.getY(), maskInfo.getWidth(),
 						maskInfo.getHeight(), des, 50, fileType, compType);
@@ -202,35 +207,37 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	/**
 	 * 이미지(Multi Tiff) -> 이미지(Single) 리스트 변환
 	 * 
-	 * @param totalCount   변환할 총 이미지(페이지) 수
-	 * @param src          변환할 이미지 경로
-	 * @param desRoot      변환 결과 이미지 저장 경로
-	 * @param baseFName    변환할 파일명 prefix
-	 * @param dotExt       변환할 파일 확장자(ex : ".jpg")
-	 * @param resultType   변환할 파일 확장자
-	 * @param maskingInfos 마스킹 정보 리스트
-	 * @param desNames     변환 결과 이미지 파일명 리스트
+	 * @param totalCount   	변환할 총 이미지(페이지) 수
+	 * @param src         	변환할 이미지 경로
+	 * @param desRootPath	변환 결과 이미지 저장 경로
+	 * @param prefix		변환할 파일명 prefix
+	 * @param dotExt       	변환할 파일 확장자(ex : ".jpg")
+	 * @param resultType   	변환할 파일 확장자
+	 * @param maskingInfos 	마스킹 정보 리스트
+	 * @param desNames     	변환 결과 이미지 파일명 리스트
 	 * @return
 	 * @throws ImageConvertException
 	 */
-	protected int convertMultiImageToImageList(int totalCount, String src, String desRoot, String baseFName,
+	protected int convertMultiImageToImageList(int totalCount, String src, String desRootPath, String prefix,
 			String dotExt, String resultType, List<IcMaskingInfo> maskingInfos, List<String> desNames)
 			throws ImageConvertException {
 		int result = -1;
-		String strIndex, outputName = "";
+		String strIndex, desPath, desFileName = "";
 
 		for (int i = 0; i < totalCount; i++) {
-			strIndex = String.format(UvConst.INDEX_FORMAT, (i + 1));
-			outputName = desRoot + baseFName + strIndex + dotExt;
-			result = imageIOJNI.extractTIFF_FILE(src, i + 1, outputName);
+			strIndex = String.format(UvConst.INDEX_FORMAT, (i+1));
+			desFileName = prefix + strIndex + dotExt;
+			desPath = desRootPath + desFileName;
+			result = imageIOJNI.extractTIFF_FILE(src, i + 1, desPath);
 
 			if (result != 0) {
 				throw new ImageConvertException(getErrorCode(result));
 			}
 
-			convertImageToImage(outputName, outputName, resultType, maskingInfos);
+			// 개별 이미지 변환
+			convertImageToImage(desPath, desPath, resultType, maskingInfos);
 
-			desNames.add(getFileNameFromDesPath(outputName, desRoot));
+			desNames.add(FilenameUtils.getBaseName(desFileName));
 		}
 
 		if (result < 0) {
@@ -240,18 +247,17 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		return result;
 	}
 
-	// PDF to Image(or ImageList)
 	/**
 	 * PDF -> 이미지(또는 이미지리스트) 변환
 	 * 
-	 * @param src        변환할 이미지 경로
-	 * @param desRoot    변환 결과 이미지 저장 루트 경로
-	 * @param desFName   변환 결과 이미지 파일명
-	 * @param resultType 변환 파일 확장자
+	 * @param src        	변환할 이미지 경로
+	 * @param desRootPath   변환 결과 이미지 저장 루트 경로
+	 * @param desFileName   변환 결과 이미지 파일명
+	 * @param resultType 	변환 파일 확장자
 	 * @return
 	 * @throws ImageConvertException
 	 */
-	protected int convertPtoI(String src, String desRoot, String desFName, String resultType)
+	protected int convertPdftoImage(String src, String desRootPath, String desFileName, String resultType)
 			throws ImageConvertException {
 		int result = -1;
 		int fileType, compType;
@@ -279,7 +285,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			throw new ImageConvertException(ErrorCodeType.INVALID_RST_TYPE.getCode());
 		}
 
-		result = InziPDF.convertPDF2NamedImage(src, desRoot, desFName, 100, 50, fileType, compType, 0, 0);
+		result = InziPDF.convertPDF2NamedImage(src, desRootPath, desFileName, 100, 50, fileType, compType, 0, 0);
 
 		if (result < 1) {
 			throw new ImageConvertException(getErrorCode(result));
@@ -289,16 +295,24 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	}
 
 	/**
-	 * convert after PDF to Image 
-	 * 1. PDF to BMP/JPG/TIFF : save desNames only 
-	 * 2. PDF to PNG : jpg to png
+	 * PDF -> PNG 변환
+	 * 	- PNG의 경우, 원본 PDF에서 직접 PNG로 변환이 불가함. 따라서 다른 이미지 확장자로 변환 후, PNG로 변환함. 
+	 * @param desRootPath	변환 결과 이미지 저장 루트 경로
+	 * @param desFileName	변환 결과 이미지 파일명
+	 * @param prefix		변환할 파일명 prefix
+	 * @param dotExt       	변환할 파일 확장자(ex : ".jpg")
+	 * @param resultType	변환 파일 확장자
+	 * @param maskingInfos	마스킹 정보 리스트
+	 * @param desNames     	변환 결과 이미지 파일명 리스트
+	 * @return
+	 * @throws ImageConvertException
 	 */
-	protected int convertAfterPdfToSingleImage(String desRoot, String des, String baseFName, String dotExt,
+	protected int convertAfterPdfToSingleImage(String desRootPath, String desFileName, String prefix, String dotExt,
 			String resultType, List<IcMaskingInfo> maskingInfos, List<String> desNames) throws ImageConvertException {
 		int result = -1;
 
 		String strIndex = String.format(INDEX_FORMAT, 1);
-		String outputName = desRoot + baseFName + strIndex + dotExt;
+		String outputName = desRootPath + prefix + strIndex + dotExt;
 
 		if (ConvertExtentionType.PNG.getCode().equalsIgnoreCase(resultType)) {
 			result = convertImageToImage(outputName, outputName, resultType, maskingInfos);
@@ -306,8 +320,8 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			result = 0;
 		}
 
-		new File(outputName).renameTo(new File(des));
-		desNames.add(getFileNameFromDesPath(des, desRoot));
+		new File(outputName).renameTo(new File(desFileName));
+		desNames.add(FilenameUtils.getBaseName(desFileName));
 
 		return result;
 	}
@@ -318,7 +332,23 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * 2. PDF to TIFF : merge to Multi tiff (ex : filename_02.tif, filename_03.tif -> merge to filename_01.tif) 
 	 * 3. PDF to PNG : jpg list to png list
 	 */
-	protected int convertAfterPdftoMultiImage(int totalCount, String desRoot, String des, String baseFName,
+	/**
+	 * 
+	 * PDF -> PNG list 변환
+	 * 	- PNG의 경우, 원본 PDF에서 직접 PNG로 변환이 불가함. 따라서 다른 이미지 확장자로 변환 후, PNG로 변환함. 
+	 * @param totalCount
+	 * @param desRootPath
+	 * @param desFileName
+	 * @param prefix
+	 * @param dotExt
+	 * @param resultType
+	 * @param maskingInfos
+	 * @param desNames
+	 * @param removePaths
+	 * @return
+	 * @throws ImageConvertException
+	 */
+	protected int convertAfterPdftoMultiImage(int totalCount, String desRootPath, String desFileName, String prefix,
 			String dotExt, String resultType, List<IcMaskingInfo> maskingInfos, List<String> desNames,
 			List<String> removePaths) throws ImageConvertException {
 		int result = -1;
@@ -331,27 +361,27 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		case JPG:
 			for (int i = 0; i < totalCount; i++) {
 				strIndex = String.format(UvConst.INDEX_FORMAT, (i + 1));
-				outputName = desRoot + baseFName + strIndex + dotExt;
+				outputName = desRootPath + prefix + strIndex + dotExt;
 
 				if (i == 0 && !ObjectUtils.isEmpty(maskingInfos)) {
 					result = convertImageToImage(outputName, outputName, resultType, maskingInfos);
 				}
 
-				desNames.add(getFileNameFromDesPath(outputName, desRoot));
+				desNames.add(FilenameUtils.getBaseName(outputName));
 			}
 
 			result = 0;
 			break;
 		case TIFF:
-			String inputName = desRoot + baseFName + "_01" + dotExt;
+			String inputName = desRootPath + prefix + "_01" + dotExt;
 
 			if (!ObjectUtils.isEmpty(maskingInfos)) {
 				result = convertImageToImage(inputName, inputName, resultType, maskingInfos);
 			}
 
 			for (int i = 1; i < totalCount; i++) { // 01번째 이미지에 02번째 부터 병합처리
-				strIndex = String.format(INDEX_FORMAT, (i + 1));
-				outputName = desRoot + baseFName + strIndex + dotExt;
+				strIndex = String.format(INDEX_FORMAT, (i+1));
+				outputName = desRootPath + prefix + strIndex + dotExt;
 
 				result = imageIOJNI.mergeTIFF_FILE(inputName, outputName);
 
@@ -362,13 +392,13 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				removePaths.add(outputName);
 			}
 
-			new File(inputName).renameTo(new File(des));
-			desNames.add(getFileNameFromDesPath(des, desRoot));
+			new File(inputName).renameTo(new File(desFileName));
+			desNames.add(FilenameUtils.getBaseName(desFileName));
 			break;
 		case PNG:
 			for (int i = 0; i < totalCount; i++) {
 				strIndex = String.format(INDEX_FORMAT, (i + 1));
-				outputName = desRoot + baseFName + strIndex + dotExt;
+				outputName = desRootPath + prefix + strIndex + dotExt;
 
 				if (i == 0 && !ObjectUtils.isEmpty(maskingInfos)) {
 					result = convertImageToImage(outputName, outputName, resultType, maskingInfos);
@@ -376,7 +406,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 					result = convertImageToImage(outputName, outputName, resultType, null);
 				}
 
-				desNames.add(getFileNameFromDesPath(outputName, desRoot));
+				desNames.add(getFileNameFromDesPath(outputName, desRootPath));
 			}
 			break;
 		default:

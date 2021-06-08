@@ -1,4 +1,4 @@
-package com.mobileleader.image.deamon;
+package com.mobileleader.edoc.sample;
 
 import java.io.File;
 

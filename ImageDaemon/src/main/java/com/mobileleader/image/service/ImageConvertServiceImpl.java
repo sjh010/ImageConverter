@@ -47,11 +47,11 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 
 			ConvertType compressionType = ConvertType.getByCode(request.getConvType());
 			
-			int totalCount = 0;
+			int totalCount = getPageTotalCount(request.getSrcPath());
 			
 			switch (compressionType) {
 			case IMAGE_TO_PDF:
-				totalCount = getImageTotalCount(request.getSrcPath());
+//				totalCount = getImageTotalCount(request.getSrcPath());
 
 				if (totalCount == 1) {
 					result = convertImageToImage(request.getSrcPath(), desPath, ConvertExtentionType.JPG.getCode(), request.getMaskInfos());
@@ -66,10 +66,10 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 				}
 				break;
 			case PDF_TO_IMAGE:
-				totalCount = getPdfTotalCount(request.getSrcPath());
+//				totalCount = getPdfTotalCount(request.getSrcPath());
 
 				if (totalCount == 1) {
-					result = convertPtoI(request.getSrcPath(), request.getDesRootPath(),
+					result = convertPdftoImage(request.getSrcPath(), request.getDesRootPath(),
 							request.getDesFileName(), request.getRstType());
 					result = convertAfterPdfToSingleImage(request.getDesRootPath(), desPath, baseName, dotExt,
 							request.getRstType(), request.getMaskInfos(), desNames);
@@ -77,14 +77,14 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 					// TODO : rst_type이 bmp일 경우, 파일사이즈가 큼. 대책 필요
 					// TODO : rst_type이 png일 경우, PtoI / ItoI 두번 수행되어 속도문제 발생. 대책 필요
 
-					result = convertPtoI(request.getSrcPath(), request.getDesRootPath(),
+					result = convertPdftoImage(request.getSrcPath(), request.getDesRootPath(),
 							request.getDesFileName(), request.getRstType());
 					result = convertAfterPdftoMultiImage(totalCount, request.getDesRootPath(), desPath, baseName, dotExt,
 							request.getRstType(), request.getMaskInfos(), desNames, removePaths);
 				}
 				break;
 			case IMAGE_TO_IMAGE :
-				totalCount = getImageTotalCount(request.getSrcPath());
+//				totalCount = getImageTotalCount(request.getSrcPath());
 
 				if (totalCount == 1) {
 					result = convertImageToImage(request.getSrcPath(), desPath, request.getRstType(), request.getMaskInfos());

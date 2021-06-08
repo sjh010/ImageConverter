@@ -76,10 +76,10 @@ public class ConvertDaemon {
 					
 					ChannelFuture channelFuture = channelFutureMap.get(request.getJobId());
 					
-					ConvertResponse response = imageConvertService.convert(request);
+					ConvertResponse response = imageConvertService.convert(request); // 이미지 변환
 					response.setDesRootPath(request.getDesRootPath());
 					
-					if (JobType.REALTIME.getCode().equalsIgnoreCase(request.getJobType())) {
+					if (JobType.REALTIME.getCode().equalsIgnoreCase(request.getJobType())) {		// 실시간 요청
 						try {
 							channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(new Gson().toJson(response), CharsetUtil.UTF_8));
 							channelFuture.addListener(ChannelFutureListener.CLOSE);
@@ -87,8 +87,7 @@ public class ConvertDaemon {
 							log.error("Error", e);
 							channelFuture.addListener(ChannelFutureListener.CLOSE);
 						} 
-						
-					} else if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {
+					} else if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {	// 배치 요청
 						try {
 							imageConvertOutboundClient.sendResponse(response);
 						} catch (Exception e) {
@@ -98,12 +97,8 @@ public class ConvertDaemon {
 						channelFuture.channel().writeAndFlush(Unpooled.EMPTY_BUFFER);
 						channelFuture.addListener(ChannelFutureListener.CLOSE);
 					}
-					
-					
 				}
 			});
 		}
 	}
-	
-	
 }
