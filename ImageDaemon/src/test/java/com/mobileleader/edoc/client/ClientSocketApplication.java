@@ -2,27 +2,30 @@ package com.mobileleader.edoc.client;
 
 import java.util.Scanner;
 
+import com.mobileleader.image.model.ConvertRequest;
+
 public class ClientSocketApplication {
 
 	public static void main(String[] args) {
 		String host = "localhost";
-		int port = 8991;
+		int port = 10500;
 		
 		Scanner sc = new Scanner(System.in);
 		
 		try {
-			for (int i=0; i < 10; i++) {
-				
-				 ConvertRequest request = new ConvertRequest();
-//	            request.setTargetPath("D:\\convert\\target\\target.jpg");
-//	            request.setDestPath("D:\\convert\\dest\\dest.pdf");
-	            request.setId("" + (i+1));
-	            request.setMode(i);
-//	            request.setExtention("PDF");
-				
-				NonSslSocket socket = new NonSslSocket(host, port);
-				socket.run(request);
-			}
+			
+			ConvertRequest request = new ConvertRequest();
+			request.setJobId("jobId1");
+			request.setJobType("R");
+			request.setSrcPath("C:\\sample\\sample_jpg.jpg");
+			request.setDesRootPath("C:\\sample");
+			request.setDesFileName("converted.pdf");
+			request.setConvType("01");
+			request.setRstType("00");
+			
+			NonSslSocket socket = new NonSslSocket(host, port);
+			socket.run(request);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

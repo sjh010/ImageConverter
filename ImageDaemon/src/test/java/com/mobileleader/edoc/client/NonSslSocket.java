@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-import com.google.gson.Gson;
+import com.mobileleader.image.model.ConvertRequest;
 
 public class NonSslSocket {
 
@@ -23,10 +23,6 @@ public class NonSslSocket {
 	            SocketAddress address = new InetSocketAddress(host, port);
 	            socket.connect(address);
 
-	           
-	            
-	            
-	            
 	            ClientSocket clientSocket = new ClientSocket(socket);
 	            clientSocket.sendRequest(request);
 	            

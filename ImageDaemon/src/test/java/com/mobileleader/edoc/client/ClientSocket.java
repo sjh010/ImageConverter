@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
+import com.mobileleader.image.model.ConvertRequest;
 
 public class ClientSocket {
 

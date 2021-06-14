@@ -237,7 +237,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			// 개별 이미지 변환
 			convertImageToImage(desPath, desPath, resultType, maskingInfos);
 
-			desNames.add(FilenameUtils.getBaseName(desFileName));
+			desNames.add(FilenameUtils.getName(desFileName));
 		}
 
 		if (result < 0) {
@@ -321,7 +321,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		}
 
 		new File(outputName).renameTo(new File(desFileName));
-		desNames.add(FilenameUtils.getBaseName(desFileName));
+		desNames.add(FilenameUtils.getName(desFileName));
 
 		return result;
 	}
@@ -367,7 +367,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 					result = convertImageToImage(outputName, outputName, resultType, maskingInfos);
 				}
 
-				desNames.add(FilenameUtils.getBaseName(outputName));
+				desNames.add(FilenameUtils.getName(outputName));
 			}
 
 			result = 0;
@@ -393,7 +393,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			}
 
 			new File(inputName).renameTo(new File(desFileName));
-			desNames.add(FilenameUtils.getBaseName(desFileName));
+			desNames.add(FilenameUtils.getName(desFileName));
 			break;
 		case PNG:
 			for (int i = 0; i < totalCount; i++) {
