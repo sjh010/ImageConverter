@@ -1,6 +1,9 @@
 package com.mobileleader.image.socket.client;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.net.ssl.SSLException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,74 +35,87 @@ public final class ImageConvertOutboundClient {
 	@Value("${client.url}")
 	private String URL;
 	
-	public void sendResponse(ConvertResponse response) throws Exception {
-		URI uri = new URI(URL);
-        String scheme = uri.getScheme() == null? "http" : uri.getScheme();
-        String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
-        int port = uri.getPort();
-        if (port == -1) {
-            if ("http".equalsIgnoreCase(scheme)) {
-                port = 80;
-            } else if ("https".equalsIgnoreCase(scheme)) {
-                port = 443;
-            }
-        }
+	public void sendResponse(ConvertResponse response) {
+		URI uri;
+		try {
+			uri = new URI(URL);
+			
+	        String scheme = uri.getScheme() == null? "http" : uri.getScheme();
+	        String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
+	        int port = uri.getPort();
+	        if (port == -1) {
+	            if ("http".equalsIgnoreCase(scheme)) {
+	                port = 80;
+	            } else if ("https".equalsIgnoreCase(scheme)) {
+	                port = 443;
+	            }
+	        }
 
-        if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
-            System.err.println("Only HTTP(S) is supported.");
-            return;
-        }
+	        if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+	            System.err.println("Only HTTP(S) is supported.");
+	            return;
+	        }
 
-        // Configure SSL context if necessary.
-        final boolean ssl = "https".equalsIgnoreCase(scheme);
-        final SslContext sslCtx;
-        if (ssl) {
-            sslCtx = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-        } else {
-            sslCtx = null;
-        }
+	        // Configure SSL context if necessary.
+	        final boolean ssl = "https".equalsIgnoreCase(scheme);
+	        final SslContext sslCtx;
+	        if (ssl) {
+	            sslCtx = SslContextBuilder.forClient()
+	                .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+	        } else {
+	            sslCtx = null;
+	        }
+	        
+	        // Configure the client.
+	        EventLoopGroup group = new NioEventLoopGroup();
+	        try {
+	            Bootstrap b = new Bootstrap();
+	            b.group(group)
+	             .channel(NioSocketChannel.class)
+	             .handler(new HttpClientInitializer(sslCtx));
 
-        // Configure the client.
-        EventLoopGroup group = new NioEventLoopGroup();
-        try {
-            Bootstrap b = new Bootstrap();
-            b.group(group)
-             .channel(NioSocketChannel.class)
-             .handler(new HttpClientInitializer(sslCtx));
+	            // Make the connection attempt.
+	            Channel ch = b.connect(host, port).sync().channel();
 
-            // Make the connection attempt.
-            Channel ch = b.connect(host, port).sync().channel();
+	            // Prepare the HTTP request.
+	            HttpRequest request = new DefaultFullHttpRequest(
+	                    HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getRawPath());
+	            request.headers().set(HttpHeaderNames.HOST, host);
+	            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+	            
+	            Gson gson = new Gson();
+	            String jsonStr = gson.toJson(response);
+	            
+	            QueryStringEncoder endoder = new QueryStringEncoder(uri.getRawPath());
+	            
+	            endoder.addParam("response", jsonStr);
+	            request.setUri(endoder.toString());
+	            
+	            // Set some example cookies.
+	            request.headers().set(
+	                    HttpHeaderNames.COOKIE,
+	                    ClientCookieEncoder.STRICT.encode(
+	                            new DefaultCookie("my-cookie", "foo"),
+	                            new DefaultCookie("another-cookie", "bar")));
 
-            // Prepare the HTTP request.
-            HttpRequest request = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.POST, uri.getRawPath());
-            request.headers().set(HttpHeaderNames.HOST, host);
-            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-            
-            Gson gson = new Gson();
-            String jsonStr = gson.toJson(response);
-            
-            QueryStringEncoder endoder = new QueryStringEncoder(uri.getRawPath());
-            
-            endoder.addParam("response", jsonStr);
-            request.setUri(endoder.toString());
-            
-            // Set some example cookies.
-            request.headers().set(
-                    HttpHeaderNames.COOKIE,
-                    ClientCookieEncoder.STRICT.encode(
-                            new DefaultCookie("my-cookie", "foo"),
-                            new DefaultCookie("another-cookie", "bar")));
+	            // Send the HTTP request.
+	            ch.writeAndFlush(request);
 
-            // Send the HTTP request.
-            ch.writeAndFlush(request);
-
-            // Wait for the server to close the connection.
-            ch.closeFuture().sync();
-        } finally {
-            // Shut down executor threads to exit.
-            group.shutdownGracefully();
-        }
+	            // Wait for the server to close the connection.
+	            ch.closeFuture().sync();
+	        } catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+	            // Shut down executor threads to exit.
+	            group.shutdownGracefully();
+	        }
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SSLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

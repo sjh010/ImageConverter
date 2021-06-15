@@ -7,9 +7,12 @@ import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mobileleader.image.convert.UvConst;
+import com.mobileleader.image.data.dto.ConvertStatus;
+import com.mobileleader.image.data.mapper.ConvertStatusMapper;
 import com.mobileleader.image.exception.ImageConvertException;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
@@ -24,7 +27,7 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 	
 	@Override
 	public ConvertResponse convert(ConvertRequest request) {
-
+		
 		// 변환서버로 응답할 변환결과 에러코드
 		String errorCode = ErrorCodeType.SUCEESS.getCode();
 		// JNI 변환모듇ㄹ로부터 받은 응답값

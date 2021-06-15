@@ -1,8 +1,11 @@
 package com.mobileleader.image.deamon;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,12 +13,16 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import com.google.gson.Gson;
+import com.mobileleader.image.data.dto.ConvertStatus;
+import com.mobileleader.image.data.mapper.ConvertStatusMapper;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
 import com.mobileleader.image.service.ImageConvertService;
 import com.mobileleader.image.socket.client.ImageConvertOutboundClient;
+import com.mobileleader.image.type.ErrorCodeType;
 import com.mobileleader.image.type.JobType;
 import com.mobileleader.image.util.JsonUtils;
 
@@ -39,9 +46,27 @@ public class ConvertDaemon {
 	@Autowired
 	private ImageConvertService imageConvertService;					// 이미지 변환 담당 서비스
 	
+	@Autowired
+	private ConvertStatusMapper convertStatusMapper;					// 배치 변환 요청 상태 매퍼
+	
 	private PriorityQueue<ConvertRequest> requestQueue;					// 이미지 변환 요청 큐(우선순위 큐)
 	
 	private Map<String, ChannelFuture> channelFutureMap;				// 이미지 요청 ID별 응답을 위한 ChannelFuture Map
+	
+	@PostConstruct
+	public void sendConvertFailResponse() {
+		List<ConvertStatus> statusList = convertStatusMapper.selectConvertFailList();
+		
+		if (!ObjectUtils.isEmpty(statusList)) {
+			for (ConvertStatus status : statusList) {
+				ConvertResponse response = new ConvertResponse();
+				response.setJobId(status.getJobId());
+				response.setErrorCode(ErrorCodeType.UNKNOWN.getCode());
+				imageConvertOutboundClient.sendResponse(response);
+				convertStatusMapper.deleteBatchConvertStatus(status.getJobId());
+			}
+		}
+	}
 	
 	public ConvertDaemon() {
 		this.requestQueue = new PriorityQueue<ConvertRequest>();
@@ -51,6 +76,15 @@ public class ConvertDaemon {
 	public void pushRequest(ConvertRequest request, ChannelFuture channelFuture) {
 		this.requestQueue.add(request);
 		this.channelFutureMap.put(request.getJobId(), channelFuture);
+		
+		if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {
+			// DB
+			ConvertStatus convertStatus = new ConvertStatus();
+			convertStatus.setFilePath(request.getSrcPath());
+			convertStatus.setJobId(request.getJobId());
+			
+			int dbResult = convertStatusMapper.insertBatchConvertRequest(convertStatus);
+		}
 	}
 	
 	public void changeCoreThreadCount(int threadChangeCount) {
@@ -90,6 +124,8 @@ public class ConvertDaemon {
 					} else if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {	// 배치 요청
 						try {
 							imageConvertOutboundClient.sendResponse(response);
+							
+							convertStatusMapper.deleteBatchConvertStatus(request.getJobId());
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

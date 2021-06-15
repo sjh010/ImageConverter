@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mobileleader.image.data.mapper.ConvertStatusMapper">
+
+	<resultMap id="baseResultMap" type="com.mobileleader.image.data.dto.ConvertStatus">
+		<result column="JOB_ID"		property="jobId"		jdbcType="VARCHAR" />
+		<result column="STATUS"		property="status"		jdbcType="INTEGER" />
+		<result column="FILE_PATH"	property="filePath"		jdbcType="VARCHAR" />
+		<result column="START_TIME" property="startTime" 	jdbcType="TIMESTAMP" /> 
+	</resultMap>
+	
+	<sql id="base_column_list">
+		JOB_ID, STATUS, FILE_PATH, START_TIME
+	</sql>
+	
+	<select id="selectConvertFailList" resultMap="baseResultMap">
+		SELECT 
+			<include refid="base_column_list" />
+		FROM
+			TB_BATCH_CONVERT_STATUS
+		WHERE
+			STATUS = 0
+	</select>
+	
+	<delete id="deleteBatchConvertStatus" parameterType="String">
+		DELETE 
+		FROM 	
+			TB_BATCH_CONVERT_STATUS
+		WHERE	
+			JOB_ID = #{jobId, jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="insertBatchConvertRequest" parameterType="com.mobileleader.image.data.dto.ConvertStatus">
+		INSERT 
+		INTO 
+			TB_BATCH_CONVERT_STATUS
+			(
+				<include refid="base_column_list" />
+			)
+		VALUES 
+		(
+			#{jobId, 		jdbcType=VARCHAR}
+			,#{status, 		jdbcType=INTEGER}
+			,#{filePath, 	jdbcType=VARCHAR}
+			,SYSDATE
+		)
+	</insert>
+</mapper>
