@@ -22,7 +22,7 @@ import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
 import com.mobileleader.image.service.ImageConvertService;
 import com.mobileleader.image.socket.client.ImageConvertOutboundClient;
-import com.mobileleader.image.type.ErrorCodeType;
+import com.mobileleader.image.type.ResponseCodeType;
 import com.mobileleader.image.type.JobType;
 import com.mobileleader.image.util.JsonUtils;
 
@@ -61,7 +61,7 @@ public class ConvertDaemon {
 			for (ConvertStatus status : statusList) {
 				ConvertResponse response = new ConvertResponse();
 				response.setJobId(status.getJobId());
-				response.setErrorCode(ErrorCodeType.UNKNOWN.getCode());
+				response.setResponseCode(ResponseCodeType.UNKNOWN.getCode());
 				imageConvertOutboundClient.sendResponse(response);
 				convertStatusMapper.deleteBatchConvertStatus(status.getJobId());
 			}

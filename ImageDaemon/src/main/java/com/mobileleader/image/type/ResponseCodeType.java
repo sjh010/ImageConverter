@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * 이미지 변환 요청 타입
  */
-public enum ErrorCodeType {
+public enum ResponseCodeType {
 
     SUCEESS				("200", "Success", 							1),
     INVALID_RST_TYPE	("810", "Invalid convert extention type", 	2),
@@ -30,21 +30,21 @@ public enum ErrorCodeType {
  		private static final long serialVersionUID = 1L;
 
  		{
- 			put(0, 		ErrorCodeType.INVALID_FILE_TYPE.getCode());
- 			put(-1, 	ErrorCodeType.INVALID_FILE_NAME.getCode());
- 			put(-2, 	ErrorCodeType.INVALID_PARAM.getCode());
- 			put(-3, 	ErrorCodeType.FAIL_CALL_MODULE.getCode());
- 			put(-4, 	ErrorCodeType.FAIL_CALL_MODULE.getCode());
- 			put(-5, 	ErrorCodeType.FAIL_DECODE_OR_MERGE.getCode());	// 상세로그 확인 필요
- 			put(-6, 	ErrorCodeType.FAIL_CALL_MODULE.getCode());
- 			put(-7, 	ErrorCodeType.FAIL_CALL_MODULE.getCode());
- 			put(-15, 	ErrorCodeType.INVALID_FILE_TYPE.getCode());
- 			put(-17, 	ErrorCodeType.INVALID_COMP_RATE.getCode());
- 			put(-96, 	ErrorCodeType.FAIL_ENLARGE_REDUCT.getCode());	// 상세로그 확인 필요
+ 			put(0, 		ResponseCodeType.INVALID_FILE_TYPE.getCode());
+ 			put(-1, 	ResponseCodeType.INVALID_FILE_NAME.getCode());
+ 			put(-2, 	ResponseCodeType.INVALID_PARAM.getCode());
+ 			put(-3, 	ResponseCodeType.FAIL_CALL_MODULE.getCode());
+ 			put(-4, 	ResponseCodeType.FAIL_CALL_MODULE.getCode());
+ 			put(-5, 	ResponseCodeType.FAIL_DECODE_OR_MERGE.getCode());	// 상세로그 확인 필요
+ 			put(-6, 	ResponseCodeType.FAIL_CALL_MODULE.getCode());
+ 			put(-7, 	ResponseCodeType.FAIL_CALL_MODULE.getCode());
+ 			put(-15, 	ResponseCodeType.INVALID_FILE_TYPE.getCode());
+ 			put(-17, 	ResponseCodeType.INVALID_COMP_RATE.getCode());
+ 			put(-96, 	ResponseCodeType.FAIL_ENLARGE_REDUCT.getCode());	// 상세로그 확인 필요
  		}
  	};
     
-    private ErrorCodeType(String code, String description, int mappingCode) {
+    private ResponseCodeType(String code, String description, int mappingCode) {
         this.code = code;
         this.description = description;
         this.mappingCode = mappingCode;
@@ -62,8 +62,8 @@ public enum ErrorCodeType {
 		return mappingCode;
 	}
 
-	public static ErrorCodeType getByCode(String code) {
-        for (ErrorCodeType value : ErrorCodeType.values()) {
+	public static ResponseCodeType getByCode(String code) {
+        for (ResponseCodeType value : ResponseCodeType.values()) {
            if (value.code.equals(code)) {
         	   return value;
            }

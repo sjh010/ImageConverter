@@ -9,7 +9,7 @@ public class ConvertResponse {
 
 	private String jobId; // 변환파일 고유아이디
 	
-	private String errorCode; // 변환결과 에러코드
+	private String responseCode; // 변환결과 에러코드
 	
 	private String desRootPath; // 변환결과 저장폴더 경로
 	
@@ -20,9 +20,9 @@ public class ConvertResponse {
 	}
 
 	
-	public ConvertResponse(String errorCode) {
+	public ConvertResponse(String responseCode) {
 		super();
-		this.errorCode = errorCode;
+		this.responseCode = responseCode;
 	}
 
 	public String getJobId() {
@@ -33,12 +33,12 @@ public class ConvertResponse {
 		this.jobId = jobId;
 	}
 
-	public String getErrorCode() {
-		return errorCode;
+	public String getResponseCode() {
+		return responseCode;
 	}
 
-	public void setErrorCode(String errorCode) {
-		this.errorCode = errorCode;
+	public void setResponseCode(String errorCode) {
+		this.responseCode = errorCode;
 	}
 
 	public String getDesRootPath() {
@@ -60,7 +60,7 @@ public class ConvertResponse {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ConvertResponse [jobId=").append(jobId).append(", errorCode=").append(errorCode)
+		builder.append("ConvertResponse [jobId=").append(jobId).append(", responseCode=").append(responseCode)
 				.append(", desRootPath=").append(desRootPath).append(", desNames=").append(desNames).append("]");
 		return builder.toString();
 	}

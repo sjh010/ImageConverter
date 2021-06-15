@@ -13,7 +13,8 @@ public enum FileType {
 	IZT		(6,  "IZT", 	 6),
 	GIF		(7,  "GIF", 	 7),
 	PNG		(8,  "PNG", 	 8),
-	PDF		(11, "PDF", 	 9);
+	PDF		(11, "PDF", 	 9),
+	NONE	(0, "UNKNOWN", 10);	
 
     private int code;
 

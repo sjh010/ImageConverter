@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import com.mobileleader.image.deamon.ConvertDaemon;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
+import com.mobileleader.image.type.ResponseCodeType;
 import com.mobileleader.image.type.JobType;
 import com.mobileleader.image.util.JsonUtils;
 
@@ -50,7 +51,7 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 		if ("Y".equalsIgnoreCase(request.getThreadChangeYn()) && request.getThreadChangeCount() > 0) {
 			convertDaemon.changeCoreThreadCount(request.getThreadChangeCount());
 			
-			channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse("200")), CharsetUtil.UTF_8));	
+			channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse(ResponseCodeType.SUCEESS.getCode())), CharsetUtil.UTF_8));	
 			channelFuture.addListener(ChannelFutureListener.CLOSE);
 		} else { // 이미지 변환 요청
 			// 요청 큐에 삽입

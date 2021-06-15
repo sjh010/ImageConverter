@@ -475,7 +475,7 @@ public class TestImageConvert {
 		ConvertResponse taskResult = new ConvertResponse();
 		taskResult.setJobId(request.getJobId());
 		taskResult.setDesNames(desNames);
-		taskResult.setErrorCode(errorCode);
+		taskResult.setResponseCode(errorCode);
 	}
 	
 
