@@ -7,19 +7,19 @@ import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mobileleader.image.convert.UvConst;
-import com.mobileleader.image.data.dto.ConvertStatus;
-import com.mobileleader.image.data.mapper.ConvertStatusMapper;
 import com.mobileleader.image.exception.ImageConvertException;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
-import com.mobileleader.image.type.ConvertExtentionType;
+import com.mobileleader.image.model.IcMaskingInfo;
 import com.mobileleader.image.type.ConvertType;
 import com.mobileleader.image.type.ResponseCodeType;
+import com.mobileleader.image.type.ResultExtentionType;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 
@@ -28,82 +28,81 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 	@Override
 	public ConvertResponse convert(ConvertRequest request) {
 		
-		String responseCode = ResponseCodeType.SUCEESS.getCode();	// 변환서버로 응답할 변환결과 에러코드
+		String jobId = request.getJobId();							// JOB ID(unique)
 		
-		int result = -1;											// JNI 변환모듇로부터 받은 응답값
+		String srcPath = request.getSrcPath();						// 변환 대상 파일 경로
 		
-		String baseName = "";										// 확장자 제외 파일명(예 : filename.jpg 중 filename)
+		String desDirPath = request.getDesRootPath();				// 변환 결과 파일 디렉터리 경로
 		
-		String dotExt = "";											// dot 포함 확장자(예 : filename.jpg 중 .jpg)
+		String desFileName = request.getDesFileName();				// 변환 결과 파일명
 		
-		String desFilePath = "";									// 변환결과파일 full path
+		String rstType = request.getRstType();						// 변환 결과 타입(확장자)
+		
+		List<IcMaskingInfo> maskingInfos = request.getMaskInfos();	// 마스킹 정보
+		
+		String responseCode = ResponseCodeType.SUCEESS.getCode();	// 변환서버로 응답할 변환결과 에러코드								
 		
 		List<String> desFileNames = new ArrayList<String>();		// 변환결과 파일명 목록(변환서버에 응답할 목록)
 		
 		List<String> removeTempPaths = new ArrayList<String>();		// 변환에 사용된 임시파일경로 목록(삭제 필요하여 저장)
-
+		
 		try {
-			baseName = FilenameUtils.getBaseName(request.getDesFileName());
-			dotExt = "." + FilenameUtils.getExtension(request.getDesFileName());
-			desFilePath = request.getDesRootPath() + File.separator + request.getDesFileName();
-
-			ConvertType compressionType = ConvertType.getByCode(request.getConvType());
+			int totalCount = getPageTotalCount(srcPath);
+			log.info("[{}] page count : {}", jobId, totalCount);
 			
-			int totalCount = getPageTotalCount(request.getSrcPath());
+			String desPath = desDirPath + File.separator + request.getDesFileName(); // 변환 결과 파일 경로
 			
-			switch (compressionType) {
+			switch (ConvertType.getByCode(request.getConvType())) {
 			case IMAGE_TO_PDF:
+				log.info("[{}] convert {} to {}", jobId, FilenameUtils.getExtension(srcPath).toUpperCase(), ResultExtentionType.getByCode(rstType).getDescription());
 				if (totalCount == 1) {
-					result = convertImageToImage(request.getSrcPath(), desFilePath, ConvertExtentionType.JPG.getCode(), request.getMaskInfos());
-					result = convertImageToPdf(desFilePath + DELIMITER, desFilePath);
-
-					desFileNames.add(FilenameUtils.getName(desFilePath));
+					// convert format(to JPG)
+					convertImageToImage(srcPath, desPath, ResultExtentionType.JPG.getCode(), maskingInfos);
+					// IMAGE(JPG) -> PDF
+					convertImageToPdf(desPath + DELIMITER, desPath);
 				} else if (totalCount > 1) {
-					result = extractTiffNItoP(totalCount, request.getSrcPath(), request.getDesRootPath(),
-							desFilePath, baseName, dotExt, request.getMaskInfos(), removeTempPaths);
-
-					desFileNames.add(FilenameUtils.getName(desFilePath));
+					// MULTI TIFF -> PDF
+					convertMultiTiffToPdf(totalCount, srcPath, desDirPath, desFileName, maskingInfos, removeTempPaths);
 				}
+				
+				desFileNames.add(FilenameUtils.getName(desFileName));
 				break;
 			case PDF_TO_IMAGE:
-				if (totalCount == 1) {
-					result = convertPdftoImage(request.getSrcPath(), request.getDesRootPath(),
-							request.getDesFileName(), request.getRstType());
-					result = convertAfterPdfToSingleImage(request.getDesRootPath(), desFilePath, baseName, dotExt,
-							request.getRstType(), request.getMaskInfos(), desFileNames);
+				// TODO : 변환 타입이 BMP일 경우, 파일사이즈가 큼. 대책 필요
+				// TODO : 변환 타입이 PNG일 경우, PtoI / ItoI 두번 수행되어 속도문제 발생. 대책 필요
+				
+				log.info("[{}] convert {} to {}", jobId, FilenameUtils.getExtension(srcPath).toUpperCase(), ResultExtentionType.getByCode(rstType).getDescription());
+				
+				// PDF -> IMAGE
+				convertPdftoImage(srcPath, desDirPath, desFileName, rstType);
+				
+				if (totalCount == 1 && ResultExtentionType.PNG.getCode().equalsIgnoreCase(rstType)) {
+					// JPG -> PNG
+					convertAfterPdfToSingleImage(desDirPath, desFileName, maskingInfos, desFileNames);
 				} else if (totalCount > 1) {
-					// TODO : rst_type이 bmp일 경우, 파일사이즈가 큼. 대책 필요
-					// TODO : rst_type이 png일 경우, PtoI / ItoI 두번 수행되어 속도문제 발생. 대책 필요
-
-					result = convertPdftoImage(request.getSrcPath(), request.getDesRootPath(),
-							request.getDesFileName(), request.getRstType());
-					result = convertAfterPdftoMultiImage(totalCount, request.getDesRootPath(), desFilePath, baseName, dotExt,
-							request.getRstType(), request.getMaskInfos(), desFileNames, removeTempPaths);
+					convertAfterPdftoMultiImage(totalCount, desDirPath, desFileName, rstType, maskingInfos, desFileNames, removeTempPaths);
 				}
 				break;
 			case IMAGE_TO_IMAGE :
+				log.info("[{}] convert {} to {}", jobId, FilenameUtils.getExtension(srcPath).toUpperCase(), ResultExtentionType.getByCode(rstType).getDescription());
 				if (totalCount == 1) {
-					result = convertImageToImage(request.getSrcPath(), desFilePath, request.getRstType(), request.getMaskInfos());
-					desFileNames.add(FilenameUtils.getName(desFilePath));
+					// IMAGE -> IMAGE
+					convertImageToImage(srcPath, desPath, rstType, maskingInfos);
+					desFileNames.add(FilenameUtils.getName(desPath));
 				} else if (totalCount > 1) {
-					result = convertMultiImageToImageList(totalCount, request.getSrcPath(), request.getDesRootPath(),
-							baseName, dotExt, request.getRstType(), request.getMaskInfos(), desFileNames);
-				}
-				break;
-			default:
-				if (result < 0) {
-					throw new ImageConvertException(getErrorCode(result));
+					// MULTI TIFF -> IMAGE LIST
+					convertMultiImageToImageList(totalCount, srcPath, desDirPath, desFileName, rstType, maskingInfos, desFileNames);
 				}
 				break;
 			}
 		} catch (ImageConvertException e) {
-			logger.error("ImageConvertException error : {}", e.getErrorCode());
+			logger.error("ImageConvertException : {}", e.getErrorCode(), e);
 			responseCode = e.getErrorCode();
 		} catch (Exception e) {
-			logger.error("Exception error : {}", e.getMessage());
-			responseCode = UvConst.ERR_CD.UNKNOWN;
+			logger.error("Exception : {}", e.getMessage(), e);
+			responseCode = ResponseCodeType.UNKNOWN.getCode();
 		} finally {
-			deleteFilesFromPath(removeTempPaths);
+			deleteTempFiles(removeTempPaths);
 		}
 		
 		logger.info("responseCode : {}", responseCode);
@@ -118,4 +117,6 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 		return taskResult;
 	}
 
+	
+	
 }
