@@ -105,9 +105,8 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 			deleteTempFiles(removeTempPaths);
 		}
 		
-		logger.info("responseCode : {}", responseCode);
-		logger.info("desNames : {}", desFileNames.toString());
-		logger.info("removePaths : {}", removeTempPaths.toString());
+		logger.info("[{}] responseCode : {}", jobId, responseCode);
+		logger.info("[{}] desNames : {}", jobId, desFileNames.toString());
 
 		ConvertResponse taskResult = new ConvertResponse();
 		taskResult.setJobId(request.getJobId());

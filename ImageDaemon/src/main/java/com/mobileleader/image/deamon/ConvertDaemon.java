@@ -61,7 +61,7 @@ public class ConvertDaemon {
 			for (ConvertStatus status : statusList) {
 				ConvertResponse response = new ConvertResponse();
 				response.setJobId(status.getJobId());
-				response.setResponseCode(ResponseCodeType.UNKNOWN.getCode());
+				response.setResponseCode(ResponseCodeType.SHUTDOWN_DAEMON.getCode());
 				imageConvertOutboundClient.sendResponse(response);
 				convertStatusMapper.deleteBatchConvertStatus(status.getJobId());
 			}

@@ -17,7 +17,8 @@ public enum ResponseCodeType {
 	FAIL_CALL_MODULE	("820", "Fail to call module", 				7),
 	FAIL_DECODE_OR_MERGE("821", "File to decode or merge", 			8),
 	FAIL_ENLARGE_REDUCT	("822", "Fail to enlarge reduct", 			8),
-	UNKNOWN				("830", "Unknown", 							99);
+	UNKNOWN				("830", "Unknown", 							9),
+	SHUTDOWN_DAEMON		("831", "Convert daemon is shutdowned",		10);
 
     private String code;
 
