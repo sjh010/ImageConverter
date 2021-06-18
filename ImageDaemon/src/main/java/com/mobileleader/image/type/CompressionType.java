@@ -5,7 +5,7 @@ package com.mobileleader.image.type;
  */
 public enum CompressionType {
 
-    NONE			(1,	 	"BMP", 	 	1),
+    NONE			(1,	 	"NONE",	 	1),
     RLE				(2,  	"JPEG", 	2),
 	G3				(3,  	"JPEG2000", 3),
 	G4				(4,  	"TIFF", 	4),

@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
 import com.mobileleader.image.model.IcMaskingInfo;
-import com.mobileleader.image.type.ConvertExtentionType;
+import com.mobileleader.image.type.ResultExtentionType;
 import com.mobileleader.image.type.ConvertType;
 import com.mobileleader.image.type.JobType;
 
@@ -24,7 +24,7 @@ public class EchoClientHandler extends ChannelInboundHandlerAdapter {
 		
 		ConvertRequest request = new ConvertRequest();
 		request.setConvType(ConvertType.IMAGE_TO_PDF.getCode());
-		request.setRstType(ConvertExtentionType.PDF.getCode());
+		request.setRstType(ResultExtentionType.PDF.getCode());
 		request.setJobId("jobId1");
 		request.setSrcPath("D:\\convert\\sample_jpg.jpg");
 		request.setDesRootPath("D:\\convert\\");

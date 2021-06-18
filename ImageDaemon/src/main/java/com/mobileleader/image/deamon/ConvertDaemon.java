@@ -83,7 +83,7 @@ public class ConvertDaemon {
 			convertStatus.setFilePath(request.getSrcPath());
 			convertStatus.setJobId(request.getJobId());
 			
-			int dbResult = convertStatusMapper.insertBatchConvertRequest(convertStatus);
+			convertStatusMapper.insertBatchConvertRequest(convertStatus);
 		}
 	}
 	

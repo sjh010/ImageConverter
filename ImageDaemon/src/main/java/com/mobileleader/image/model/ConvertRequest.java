@@ -11,7 +11,7 @@ public class ConvertRequest implements Comparable<ConvertRequest> {
 
 	private String jobId;		// 변환파일단위 고유아이디
 	
-	private String jobType; 	// 실시간/배치 여부(UvConst 참조)
+	private String jobType; 	// 실시간/배치 여부(JobType ENUM 참조)
 	
 	private String srcPath; 	// 변환할 파일 경로(fullPath)
 	
@@ -19,9 +19,9 @@ public class ConvertRequest implements Comparable<ConvertRequest> {
 	
 	private String desFileName; // 변환결과 파일명
 	
-	private String convType; 	// 변환방식(UvConst 참조)
+	private String convType; 	// 변환방식(ConvertType ENUM 참조)
 	
-	private String rstType; 	// 변환결과타입(UvConst 참조)
+	private String rstType; 	// 변환결과타입(ResultExtectionType ENUM 참조)
 	
 	private List<IcMaskingInfo> maskInfos; // 마스킹정보 목록(최대 5개)
 	
@@ -134,12 +134,28 @@ public class ConvertRequest implements Comparable<ConvertRequest> {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ConvertRequest [jobId=").append(jobId).append(", jobType=").append(jobType).append(", srcPath=")
-				.append(srcPath).append(", desRootPath=").append(desRootPath).append(", desFileName=")
-				.append(desFileName).append(", convType=").append(convType).append(", rstType=").append(rstType)
-				.append(", maskInfos=").append(maskInfos).append(", threadChangeYn=").append(threadChangeYn)
-				.append(", threadChangeCount=").append(threadChangeCount).append("]");
+		builder.append("ConvertRequest [jobId=");
+		builder.append(jobId);
+		builder.append(", jobType=");
+		builder.append(jobType);
+		builder.append(", srcPath=");
+		builder.append(srcPath);
+		builder.append(", desRootPath=");
+		builder.append(desRootPath);
+		builder.append(", desFileName=");
+		builder.append(desFileName);
+		builder.append(", convType=");
+		builder.append(convType);
+		builder.append(", rstType=");
+		builder.append(rstType);
+		builder.append(", maskInfos=");
+		builder.append(maskInfos);
+		builder.append(", threadChangeYn=");
+		builder.append(threadChangeYn);
+		builder.append(", threadChangeCount=");
+		builder.append(threadChangeCount);
+		builder.append("]");
 		return builder.toString();
 	}
-	
+
 }

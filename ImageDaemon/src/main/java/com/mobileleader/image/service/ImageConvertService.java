@@ -6,4 +6,5 @@ import com.mobileleader.image.model.ConvertResponse;
 public interface ImageConvertService {
 
 	public ConvertResponse convert(ConvertRequest request);
+	
 }
