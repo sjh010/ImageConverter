@@ -39,6 +39,8 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		
+		log.info("==== Message receive from client ====");
+		
 		ByteBuf mBuf = (ByteBuf) msg;
 		
 		ConvertRequest request = new ConvertRequest();

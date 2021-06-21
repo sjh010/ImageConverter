@@ -91,7 +91,7 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 					desFileNames.add(FilenameUtils.getName(desPath));
 				} else if (totalCount > 1) {
 					// MULTI TIFF -> IMAGE LIST
-					convertMultiImageToImageList(totalCount, srcPath, desDirPath, desFileName, rstType, maskingInfos, desFileNames);
+					convertMultiImageToImageList(totalCount, srcPath, desDirPath, desFileName, rstType, maskingInfos, desFileNames, removeTempPaths);
 				}
 				break;
 			}

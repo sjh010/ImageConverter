@@ -40,7 +40,7 @@ public class SchedulerConfig {
 		//convertExecutor.setAllowCoreThreadTimeOut(true);
 		
 		// prefix thread 명 지정
-		convertExecutor.setThreadNamePrefix("Executor - ");
+		convertExecutor.setThreadNamePrefix("convert thread - ");
 		
 		// queue 대기열 및 task가 완료된 이후에 shutdown 여부
 		convertExecutor.setWaitForTasksToCompleteOnShutdown(true);

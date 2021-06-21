@@ -23,9 +23,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 	protected final char DELIMITER = '|';
 
-	protected final String POSTFIX_FORMAT = "_%02d";
-
-	protected final String PREFIX_FORMAT = "%02d_";
+	protected final String INDEX_FORMAT = "_%02d";
 
 	protected ImageIOJNI imageIOJNI = new ImageIOJNI();
 
@@ -179,16 +177,20 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @throws ImageConvertException
 	 */
 	protected int convertMultiImageToImageList(int totalCount, String srcPath, String desDirPath, String desFileName, String rstType, 
-			List<IcMaskingInfo> maskingInfos, List<String> desNames) throws ImageConvertException {
+			List<IcMaskingInfo> maskingInfos, List<String> desNames, List<String> removePaths) throws ImageConvertException {
 		int result = -1;
 
+		String prefix = FilenameUtils.getBaseName(desFileName);
+		String extention = FilenameUtils.getExtension(desFileName);
 		StringBuilder outputName = null;
 
-		for (int i = 0; i < totalCount; i++) {
+		for (int i=0; i < totalCount; i++) {
 			outputName = new StringBuilder();
 			outputName.append(desDirPath);
-			outputName.append(String.format(PREFIX_FORMAT, (i + 1)));
-			outputName.append(desFileName);
+			outputName.append(prefix);
+			outputName.append(String.format(INDEX_FORMAT, (i + 1)));
+			outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
+			outputName.append(extention);
 
 			result = imageIOJNI.extractTIFF_FILE(srcPath, i + 1, outputName.toString());
 
@@ -200,6 +202,38 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			convertImageToImage(outputName.toString(), outputName.toString(), rstType, maskingInfos);
 
 			desNames.add(FilenameUtils.getName(outputName.toString()));
+		}
+		
+		
+		
+		if (ResultExtentionType.TIFF.getCode().equalsIgnoreCase(rstType)) {
+			StringBuilder inputName = new StringBuilder();
+			inputName.append(desDirPath);
+			inputName.append(prefix);
+			inputName.append("_01");
+			inputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
+			inputName.append(extention);
+			
+			for (int i=1; i < totalCount; i++) {
+				outputName = new StringBuilder();
+				outputName.append(desDirPath);
+				outputName.append(prefix);
+				outputName.append(String.format(INDEX_FORMAT, (i + 1)));
+				outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
+				outputName.append(extention);
+				
+				result = imageIOJNI.mergeTIFF_FILE(inputName.toString(), outputName.toString());
+				
+				if (result < 0) {
+					throw new ImageConvertException(getErrorCode(result));
+				}
+
+				removePaths.add(outputName.toString());
+			}
+			
+			new File(inputName.toString()).renameTo(new File(desDirPath + File.separator + desFileName));
+			desNames.clear();
+			desNames.add(desFileName);
 		}
 
 		if (result < 0) {
@@ -275,7 +309,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		StringBuilder outputName = new StringBuilder();
 		outputName.append(desDirPath);
 		outputName.append(prefix);
-		outputName.append(String.format(POSTFIX_FORMAT, 1));
+		outputName.append(String.format(INDEX_FORMAT, 1));
 		outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
 		outputName.append(resultExt);
 
@@ -289,7 +323,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			throw new ImageConvertException(getErrorCode(result));
 		}
 
-		new File(outputName.toString()).renameTo(new File(desFileName));
+		new File(outputName.toString()).renameTo(new File(desDirPath + File.separator + desFileName));
 		desNames.add(FilenameUtils.getName(desFileName));
 
 		return result;
@@ -327,7 +361,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				outputName = new StringBuilder();
 				outputName.append(desDirPath);
 				outputName.append(prefix);
-				outputName.append(String.format(POSTFIX_FORMAT, (i+1)));
+				outputName.append(String.format(INDEX_FORMAT, (i+1)));
 				outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
 				outputName.append(resultExt);
 
@@ -352,7 +386,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				outputName = new StringBuilder();
 				outputName.append(desDirPath);
 				outputName.append(prefix);
-				outputName.append(String.format(POSTFIX_FORMAT, (i + 1)));
+				outputName.append(String.format(INDEX_FORMAT, (i + 1)));
 				outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
 				outputName.append(resultExt);
 				
@@ -373,7 +407,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				outputName = new StringBuilder();
 				outputName.append(desDirPath);
 				outputName.append(prefix);
-				outputName.append(String.format(POSTFIX_FORMAT, (i + 1)));
+				outputName.append(String.format(INDEX_FORMAT, (i + 1)));
 				outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
 				outputName.append(resultExt);
 
@@ -418,14 +452,19 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 		int result = -1;;
 
+		String prefix = FilenameUtils.getBaseName(desFileName);
+		String extention = FilenameUtils.getExtension(desFileName);
+		
 		StringBuilder outputName = null;
 		StringBuilder jSingleTiffList = new StringBuilder();
 
 		for (int i = 0; i < totalCount; i++) {
 			outputName = new StringBuilder();
 			outputName.append(desDirPath);
-			outputName.append(String.format(PREFIX_FORMAT, (i+1)));
-			outputName.append(desFileName);
+			outputName.append(prefix);
+			outputName.append(String.format(INDEX_FORMAT, (i+1)));
+			outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
+			outputName.append(extention);
 		
 			result = imageIOJNI.extractTIFF_FILE(srcPath, i + 1, outputName.toString());
 

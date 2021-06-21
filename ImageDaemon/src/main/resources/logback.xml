@@ -2,7 +2,7 @@
 <!DOCTYPE xml>
 
 <configuration scan="true" scanPeriod="30 seconds">
-	<property name="DAEMON_LOG_DIR" value="./log" />
+	<property resource="application.properties" />
 	<property name="LOG_PATTERN" value="[%d] [%thread] %-5level %logger{36} - %msg%n" />
 	
 	<!-- console -->
@@ -14,10 +14,10 @@
 
 	<!-- file -->
 	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${DAEMON_LOG_DIR}/daemon.log</file>
+		<file>${log.path}/daemon.log</file>
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${DAEMON_LOG_DIR}/daemon.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<fileNamePattern>${log.path}/daemon.%d{yyyy-MM-dd}.log</fileNamePattern>
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder

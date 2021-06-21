@@ -25,6 +25,7 @@ import com.mobileleader.image.socket.client.ImageConvertOutboundClient;
 import com.mobileleader.image.type.ResponseCodeType;
 import com.mobileleader.image.type.JobType;
 import com.mobileleader.image.util.JsonUtils;
+import com.mobileleader.image.util.TimeLogUtils;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -74,6 +75,8 @@ public class ConvertDaemon {
 	}
 
 	public void pushRequest(ConvertRequest request, ChannelFuture channelFuture) {
+		log.info("[{}] add to Queue", request.getJobId());
+		
 		this.requestQueue.add(request);
 		this.channelFutureMap.put(request.getJobId(), channelFuture);
 		
@@ -83,7 +86,9 @@ public class ConvertDaemon {
 			convertStatus.setFilePath(request.getSrcPath());
 			convertStatus.setJobId(request.getJobId());
 			
+			long startTime = System.currentTimeMillis();
 			convertStatusMapper.insertBatchConvertRequest(convertStatus);
+			TimeLogUtils.logging(startTime, System.currentTimeMillis(), "[" + request.getJobId() +"] DB insert");
 		}
 	}
 	
@@ -103,29 +108,35 @@ public class ConvertDaemon {
 				@Override
 				@Async
 				public void run() {
-					log.info(requestQueue.toString());
 					ConvertRequest request = requestQueue.poll();
 					
 					log.info("Request : {}", JsonUtils.ObjectPrettyPrint(request));
 					
 					ChannelFuture channelFuture = channelFutureMap.get(request.getJobId());
 					
+					long startTime = System.currentTimeMillis();
 					ConvertResponse response = imageConvertService.convert(request); // 이미지 변환
+					TimeLogUtils.logging(startTime, System.currentTimeMillis(), "[" + request.getJobId() + "] Convert image");
 					response.setDesRootPath(request.getDesRootPath());
 					
 					if (JobType.REALTIME.getCode().equalsIgnoreCase(request.getJobType())) {		// 실시간 요청
 						try {
+							startTime = System.currentTimeMillis();
 							channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(new Gson().toJson(response), CharsetUtil.UTF_8));
 							channelFuture.addListener(ChannelFutureListener.CLOSE);
+							TimeLogUtils.logging(startTime, System.currentTimeMillis(), "[" + request.getJobId() + "] Send response (R)");
 						} catch (Exception e) {
 							log.error("Error", e);
 							channelFuture.addListener(ChannelFutureListener.CLOSE);
 						} 
 					} else if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {	// 배치 요청
 						try {
+							startTime = System.currentTimeMillis();
 							imageConvertOutboundClient.sendResponse(response);
-							
+							TimeLogUtils.logging(startTime, System.currentTimeMillis(), "[" + request.getJobId() + "] Send response (B)");
+							startTime = System.currentTimeMillis();
 							convertStatusMapper.deleteBatchConvertStatus(request.getJobId());
+							TimeLogUtils.logging(startTime, System.currentTimeMillis(), "[" + request.getJobId() + "] DB delete");
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
