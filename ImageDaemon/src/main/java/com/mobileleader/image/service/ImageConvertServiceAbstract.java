@@ -300,29 +300,22 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @return
 	 * @throws ImageConvertException
 	 */
-	protected int convertAfterPdfToSingleImage(String desDirPath, String desFileName, List<IcMaskingInfo> maskingInfos, List<String> desNames) throws ImageConvertException {
+	protected int convertAfterPdfToSingleImage(String desDirPath, String desFileName, String resultType, List<IcMaskingInfo> maskingInfos, List<String> desNames) throws ImageConvertException {
 		int result = -1;
-
-		String prefix = FilenameUtils.getBaseName(desFileName);
-		String resultExt = FilenameUtils.getExtension(desFileName);
 
 		StringBuilder outputName = new StringBuilder();
 		outputName.append(desDirPath);
-		outputName.append(prefix);
+		outputName.append(FilenameUtils.getBaseName(desFileName));
 		outputName.append(String.format(INDEX_FORMAT, 1));
 		outputName.append(FilenameUtils.EXTENSION_SEPARATOR_STR);
-		outputName.append(resultExt);
+		outputName.append(FilenameUtils.getExtension(desFileName));
 
-		if (ResultExtentionType.PNG.getCode().equalsIgnoreCase(resultExt)) {
-			result = convertImageToImage(outputName.toString(), outputName.toString(), resultExt, maskingInfos);
+		if (ResultExtentionType.PNG.getCode().equalsIgnoreCase(resultType)) {
+			result = convertImageToImage(outputName.toString(), outputName.toString(), resultType, maskingInfos);
 		} else {
 			result = 0;
 		}
-
-		if (result < 1) {
-			throw new ImageConvertException(getErrorCode(result));
-		}
-
+		
 		new File(outputName.toString()).renameTo(new File(desDirPath + File.separator + desFileName));
 		desNames.add(FilenameUtils.getName(desFileName));
 

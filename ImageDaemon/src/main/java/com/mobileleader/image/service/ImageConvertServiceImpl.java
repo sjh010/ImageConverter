@@ -76,9 +76,9 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 				// PDF -> IMAGE
 				convertPdftoImage(srcPath, desDirPath, desFileName, rstType);
 				
-				if (totalCount == 1 && ResultExtentionType.PNG.getCode().equalsIgnoreCase(rstType)) {
+				if (totalCount == 1) {
 					// JPG -> PNG
-					convertAfterPdfToSingleImage(desDirPath, desFileName, maskingInfos, desFileNames);
+					convertAfterPdfToSingleImage(desDirPath, desFileName, rstType, maskingInfos, desFileNames);
 				} else if (totalCount > 1) {
 					convertAfterPdftoMultiImage(totalCount, desDirPath, desFileName, rstType, maskingInfos, desFileNames, removeTempPaths);
 				}
