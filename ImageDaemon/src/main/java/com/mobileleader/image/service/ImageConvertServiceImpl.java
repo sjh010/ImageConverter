@@ -55,14 +55,17 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 			switch (ConvertType.getByCode(request.getConvType())) {
 			case IMAGE_TO_PDF:
 				log.info("[{}] convert {} to {}", jobId, FilenameUtils.getExtension(srcPath).toUpperCase(), ResultExtentionType.getByCode(rstType).getDescription());
+				
+				int pageDirection = getPageDirection(srcPath);
+				
 				if (totalCount == 1) {
 					// convert format(to JPG)
 					convertImageToImage(srcPath, desPath, ResultExtentionType.JPG.getCode(), maskingInfos);
 					// IMAGE(JPG) -> PDF
-					convertImageToPdf(desPath + DELIMITER, desPath);
+					convertImageToPdf(desPath, desPath, pageDirection);
 				} else if (totalCount > 1) {
 					// MULTI TIFF -> PDF
-					convertMultiTiffToPdf(totalCount, srcPath, desDirPath, desFileName, maskingInfos, removeTempPaths);
+					convertMultiTiffToPdf(totalCount, srcPath, desDirPath, desFileName, maskingInfos, removeTempPaths, pageDirection);
 				}
 				
 				desFileNames.add(FilenameUtils.getName(desFileName));

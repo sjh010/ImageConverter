@@ -88,6 +88,32 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 		return totalCount;
 	}
+	
+	/**
+	 * 이미지 방향 확인
+	 * 
+	 * @param srcPath 이미지 full path
+	 * @return
+	 * @throws ImageConvertException
+	 */
+	protected int getPageDirection(String srcPath) throws ImageConvertException {
+		int pageDirection = 0;
+		long[] size = new long[2];
+		int result = imageIOJNI.getPageSize_FILE(srcPath, 1, size);
+		
+		if (result != 0) {
+			throw new ImageConvertException(getErrorCode(result));
+		}
+		
+		long width = size[0];
+		long height = size[1];
+		
+		if (width > height) {
+			pageDirection = 1;
+		}
+		
+		return pageDirection;
+	}
 
 	/**
 	 * 이미지(또는 이미지리스트) -> PDF 변환
@@ -97,8 +123,8 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @return
 	 * @throws ImageConvertException
 	 */
-	protected int convertImageToPdf(String srcPath, String desPath) throws ImageConvertException {
-		int result = Image2PDFJNI.convertImage2PDF_LE(srcPath, DELIMITER, 3, 1, 0, 0, desPath);
+	protected int convertImageToPdf(String srcPath, String desPath, int pageDirection) throws ImageConvertException {
+		int result = Image2PDFJNI.convertImage2PDF_LE(srcPath, DELIMITER, 3, pageDirection, 0, 0, desPath);
 
 		if (result != 0) {
 			throw new ImageConvertException(getErrorCode(result));
@@ -277,7 +303,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		}
 
 		// PDF to Image : PDF가 여러장일 경우, desFileName_01, desFileName_02, ... 형태로 파일 생성
-		result = InziPDF.convertPDF2NamedImage(srcPath, desDirPath, desFileName, 100, 50, fileType, compType, 0, 0);
+		result = InziPDF.convertPDF2NamedImage(srcPath, desDirPath, desFileName, 108, 50, fileType, compType, 0, 0);
 
 		if (result < 1) {
 			throw new ImageConvertException(getErrorCode(result));
@@ -316,8 +342,14 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			result = 0;
 		}
 		
-		new File(outputName.toString()).renameTo(new File(desDirPath + File.separator + desFileName));
-		desNames.add(FilenameUtils.getName(desFileName));
+		boolean isSuccess = new File(outputName.toString()).renameTo(new File(desDirPath + desFileName));
+		
+		if (isSuccess) {
+			desNames.add(FilenameUtils.getName(desFileName));
+		} else {
+			desNames.add(FilenameUtils.getName(outputName.toString()));
+		}
+		
 
 		return result;
 	}
@@ -392,8 +424,14 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				removePaths.add(outputName.toString());
 			}
 
-			new File(inputName.toString()).renameTo(new File(desDirPath + File.separator + desFileName));
-			desNames.add(FilenameUtils.getName(desFileName));
+			boolean isSuccess = new File(outputName.toString()).renameTo(new File(desDirPath + desFileName));
+			
+			if (isSuccess) {
+				desNames.add(FilenameUtils.getName(desFileName));
+			} else {
+				desNames.add(FilenameUtils.getName(outputName.toString()));
+			}
+
 			break;
 		case PNG:
 			for (int i = 0; i < totalCount; i++) {
@@ -440,8 +478,8 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @return
 	 * @throws ImageConvertException
 	 */
-	protected int convertMultiTiffToPdf(int totalCount, String srcPath, String desDirPath, String desFileName, List<IcMaskingInfo> maskingInfos, List<String> removePaths) 
-			throws ImageConvertException {
+	protected int convertMultiTiffToPdf(int totalCount, String srcPath, String desDirPath, String desFileName, 
+			List<IcMaskingInfo> maskingInfos, List<String> removePaths, int pageDirection) throws ImageConvertException {
 
 		int result = -1;;
 
@@ -474,7 +512,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			jSingleTiffList.append(outputName.toString()).append(DELIMITER);
 		}
 
-		result = convertImageToPdf(jSingleTiffList.toString(), desDirPath + File.separator + desFileName);
+		result = convertImageToPdf(jSingleTiffList.toString(), desDirPath + File.separator + desFileName, pageDirection);
 
 		return result;
 	}
