@@ -339,7 +339,11 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		if (ResultExtentionType.PNG.getCode().equalsIgnoreCase(resultType)) {
 			result = convertImageToImage(outputName.toString(), outputName.toString(), resultType, maskingInfos);
 		} else {
-			result = 0;
+			if (!ObjectUtils.isEmpty(maskingInfos)) {
+				result = convertImageToImage(outputName.toString(), outputName.toString(), resultType, maskingInfos);
+			} else {
+				result = 0;
+			}
 		}
 		
 		boolean isSuccess = new File(outputName.toString()).renameTo(new File(desDirPath + desFileName));
