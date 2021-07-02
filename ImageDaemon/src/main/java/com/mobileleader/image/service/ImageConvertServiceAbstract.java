@@ -303,7 +303,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		}
 
 		// PDF to Image : PDF가 여러장일 경우, desFileName_01, desFileName_02, ... 형태로 파일 생성
-		result = InziPDF.convertPDF2NamedImage(srcPath, desDirPath, desFileName, 108, 50, fileType, compType, 0, 0);
+		result = InziPDF.convertPDF2NamedImage(srcPath, desDirPath, desFileName, 200, 80, fileType, compType, 0, 0);
 
 		if (result < 1) {
 			throw new ImageConvertException(getErrorCode(result));
@@ -428,12 +428,12 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				removePaths.add(outputName.toString());
 			}
 
-			boolean isSuccess = new File(outputName.toString()).renameTo(new File(desDirPath + desFileName));
+			boolean isSuccess = new File(inputName.toString()).renameTo(new File(desDirPath + desFileName));
 			
 			if (isSuccess) {
 				desNames.add(FilenameUtils.getName(desFileName));
 			} else {
-				desNames.add(FilenameUtils.getName(outputName.toString()));
+				desNames.add(FilenameUtils.getName(inputName.toString()));
 			}
 
 			break;
