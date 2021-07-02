@@ -8,6 +8,8 @@ import com.mobileleader.image.type.JobType;
  * 이미지 변환 request
  */
 public class ConvertRequest implements Comparable<ConvertRequest> {
+	
+	private long id;
 
 	private String jobId;		// 변환파일단위 고유아이디
 	
@@ -29,6 +31,18 @@ public class ConvertRequest implements Comparable<ConvertRequest> {
 	
 	private int threadChangeCount = 0;
 	
+	public ConvertRequest() {
+		this.id = System.currentTimeMillis();
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
 	public String getJobId() {
 		return jobId;
 	}
@@ -114,21 +128,23 @@ public class ConvertRequest implements Comparable<ConvertRequest> {
 	 */
 	@Override
 	public int compareTo(ConvertRequest target) { 
-		if (JobType.REALTIME.getCode().equals(this.jobType)) {
-			if (JobType.REALTIME.getCode().equals(target.jobType)) { // 둘다 실시간
-				return 0;
-			} else { // 기존 배치, 신규 실시간
-				return -1;
+		int result = 0;
+		
+		if (this.jobType.equals(target.getJobType())) {
+			if (this.id <= target.getId()) {
+				result = -1;
+			} else {
+				result = 1;
 			}
-		} else if (JobType.BATCH.getCode().equals(this.jobType)){
-			if (JobType.REALTIME.getCode().equals(target.jobType)) { // 기존 실시간, 신규 배치
-				return 1;
-			} else { // 둘다 배치
-				return 0;
+		} else if (!this.jobType.equals(target.getJobType())) {
+			if (JobType.REALTIME.getCode().equalsIgnoreCase(target.getJobType())) {
+				result = 1;
+			} else if (JobType.BATCH.getCode().equalsIgnoreCase(target.getJobType())) {
+				result = -1;
 			}
-		} else {
-			return 0;
 		}
+
+		return result;
 	}
 
 	@Override
