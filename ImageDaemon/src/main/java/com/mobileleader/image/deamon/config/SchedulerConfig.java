@@ -26,7 +26,7 @@ public class SchedulerConfig {
 		
 		// 최대 pool size 지정. 기본값 Integer.MAX, 기본적으로 core pool size 안에서 해결하고
 		// core pool size + queue capacity를 넘는 요청이 왔을 때만 max pool size 안에서 pool을 생성한다.
-		//executor.setMaxPoolSize(30);
+		convertExecutor.setMaxPoolSize(8);
 		
 		// 대기열 size 지정. 기본값 Integer.MAX, 0으로 설정한 경우 queue type이 SynchronousQueue를, 0 초과로 설정한 경우
 		// LinkedBlockingQueue를 생성한다.
