@@ -5,12 +5,12 @@ import java.nio.charset.Charset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.Gson;
 import com.mobileleader.image.deamon.ConvertDaemon;
 import com.mobileleader.image.model.ConvertRequest;
 import com.mobileleader.image.model.ConvertResponse;
-import com.mobileleader.image.type.ResponseCodeType;
 import com.mobileleader.image.type.JobType;
+import com.mobileleader.image.type.PingType;
+import com.mobileleader.image.type.ResponseCodeType;
 import com.mobileleader.image.util.JsonUtils;
 
 import io.netty.buffer.ByteBuf;
@@ -41,30 +41,38 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 		
 		log.info("==== Message receive from client ====");
 		
-		ByteBuf mBuf = (ByteBuf) msg;
-		
-		ConvertRequest request = new ConvertRequest();
-		
-		request = JsonUtils.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
-
 		ChannelFuture channelFuture = ctx.write(Unpooled.EMPTY_BUFFER);
 		
-		// 이미지 변환용 쓰레드 개수 변경 요청
-		if ("Y".equalsIgnoreCase(request.getThreadChangeYn()) && request.getThreadChangeCount() > 0) {
-			convertDaemon.changeCoreThreadCount(request.getThreadChangeCount());
+		ByteBuf mBuf = (ByteBuf) msg;
+		
+		String message = JsonUtils.fromJson(mBuf.toString(Charset.forName("UTF-8")), String.class);
+		
+		if (PingType.PING.getDescription().equalsIgnoreCase(message)) {
+			channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(PingType.PONG.getDescription().getBytes()));
+		} else {
+			ConvertRequest request = new ConvertRequest();
 			
-			channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse(ResponseCodeType.SUCEESS.getCode())), CharsetUtil.UTF_8));	
-			channelFuture.addListener(ChannelFutureListener.CLOSE);
-		} else { // 이미지 변환 요청
-			// 요청 큐에 삽입
-			convertDaemon.pushRequest(request, channelFuture);
-			
-			if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {
-				// status code 추기
-				channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse("200")), CharsetUtil.UTF_8));	
+			request = JsonUtils.fromJson(mBuf.toString(Charset.forName("UTF-8")), ConvertRequest.class);
+
+			// 이미지 변환용 쓰레드 개수 변경 요청
+			if ("Y".equalsIgnoreCase(request.getThreadChangeYn()) && request.getThreadChangeCount() > 0) {
+				convertDaemon.changeCoreThreadCount(request.getThreadChangeCount());
+				
+				channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse(ResponseCodeType.SUCEESS.getCode())), CharsetUtil.UTF_8));	
 				channelFuture.addListener(ChannelFutureListener.CLOSE);
-			}
-		}		
+			} else { // 이미지 변환 요청
+				// 요청 큐에 삽입
+				convertDaemon.addRequest(request, channelFuture);
+				
+				if (JobType.BATCH.getCode().equalsIgnoreCase(request.getJobType())) {
+					// status code 추기
+					channelFuture.channel().writeAndFlush(Unpooled.copiedBuffer(JsonUtils.toJson(new ConvertResponse("200")), CharsetUtil.UTF_8));	
+					channelFuture.addListener(ChannelFutureListener.CLOSE);
+				}
+			}		
+		}
+		
+		
 	}
 
 	@Override
@@ -74,6 +82,7 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 	
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		ctx.writeAndFlush(null).addListener(ChannelFutureListener.CLOSE);
 		super.exceptionCaught(ctx, cause);
 	}
 	
