@@ -19,7 +19,6 @@ public class ConvertResponse {
 		super();
 	}
 
-	
 	public ConvertResponse(String responseCode) {
 		super();
 		this.responseCode = responseCode;

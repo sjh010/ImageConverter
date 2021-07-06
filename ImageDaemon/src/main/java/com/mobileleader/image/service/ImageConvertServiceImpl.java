@@ -111,12 +111,12 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 		logger.info("[{}] responseCode : {}", jobId, responseCode);
 		logger.info("[{}] desNames : {}", jobId, desFileNames.toString());
 
-		ConvertResponse taskResult = new ConvertResponse();
-		taskResult.setJobId(request.getJobId());
-		taskResult.setDesNames(desFileNames);
-		taskResult.setResponseCode(responseCode);
+		ConvertResponse convertResponse = new ConvertResponse();
+		convertResponse.setJobId(request.getJobId());
+		convertResponse.setDesNames(desFileNames);
+		convertResponse.setResponseCode(responseCode);
 
-		return taskResult;
+		return convertResponse;
 	}
 
 	

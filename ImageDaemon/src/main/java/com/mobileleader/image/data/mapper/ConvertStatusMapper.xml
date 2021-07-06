@@ -39,10 +39,10 @@
 			)
 		VALUES 
 		(
-			#{jobId, 		jdbcType=VARCHAR}
-			,#{status, 		jdbcType=INTEGER}
-			,#{filePath, 	jdbcType=VARCHAR}
-			,SYSDATE
+			#{jobId, 		jdbcType=VARCHAR},
+			#{status, 		jdbcType=INTEGER},
+			#{filePath, 	jdbcType=VARCHAR},
+			SYSDATE
 		)
 	</insert>
 </mapper>
