@@ -81,11 +81,13 @@ public class ConvertDaemon {
 	 * 이미지 변환 작업에 사용할 Thread 개수 변경
 	 */
 	public void changeCoreThreadCount(int threadChangeCount) {
-		log.info("Change Thread Count : {} -> {}", convertExecutor.getCorePoolSize(), threadChangeCount);
-		convertExecutor.setMaxPoolSize(threadChangeCount);
-		convertExecutor.setCorePoolSize(threadChangeCount);
-		log.info("Thread pool size : {}", convertExecutor.getCorePoolSize());
+		log.info("Change thread count : {} -> {}", convertExecutor.getCorePoolSize(), threadChangeCount);
 		
+		convertExecutor.setCorePoolSize(threadChangeCount);
+		convertExecutor.setMaxPoolSize(threadChangeCount);
+		
+		log.info("Thread core pool size : {}", convertExecutor.getCorePoolSize());
+		log.info("Thread max pool size : {}", convertExecutor.getMaxPoolSize());
 	}
 
 	/**
