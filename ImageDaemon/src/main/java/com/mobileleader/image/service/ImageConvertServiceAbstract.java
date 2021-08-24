@@ -162,6 +162,10 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		case PNG:
 			fileType = FileType.PNG.getCode();
 			break;
+		case TIFF_JPEG:
+			fileType = FileType.TIFF.getCode();
+			compType = CompressionType.JPEG_IN_TIFF.getCode();
+			break;
 		default:
 			throw new ImageConvertException(ResponseCodeType.INVALID_RST_TYPE.getCode());
 		}
@@ -232,7 +236,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 		
 		
 		
-		if (ResultExtentionType.TIFF.getCode().equalsIgnoreCase(rstType)) {
+		if (ResultExtentionType.TIFF.getCode().equalsIgnoreCase(rstType) || ResultExtentionType.TIFF_JPEG.getCode().equalsIgnoreCase(rstType)) {
 			StringBuilder inputName = new StringBuilder();
 			inputName.append(desDirPath);
 			inputName.append(prefix);
@@ -279,7 +283,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 	 * @return
 	 * @throws ImageConvertException
 	 */
-	protected int convertPdftoImage(String srcPath, String desDirPath, String desFileName, String rstType) throws ImageConvertException {
+	protected int convertPdfToImage(String srcPath, String desDirPath, String desFileName, String rstType) throws ImageConvertException {
 		int result = -1;
 		int fileType = FileType.NONE.getCode();
 		int compType = CompressionType.NONE.getCode();
@@ -297,6 +301,10 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			break;
 		case PNG:
 			fileType = FileType.JPEG.getCode(); // PNG는 지원하지 않아 JPEG로 변환
+			break;
+		case TIFF_JPEG:
+			fileType = FileType.TIFF.getCode();
+			compType = CompressionType.JPEG_IN_TIFF.getCode();
 			break;
 		default:
 			throw new ImageConvertException(ResponseCodeType.INVALID_RST_TYPE.getCode());
@@ -403,6 +411,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 
 			result = 0;
 			break;
+		case TIFF_JPEG:
 		case TIFF:
 			StringBuilder inputName = new StringBuilder();
 			inputName.append(desDirPath).append(prefix).append("_01.").append(resultExt);

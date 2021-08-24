@@ -5,11 +5,13 @@ package com.mobileleader.image.type;
  */
 public enum ResultExtentionType {
 
-    PDF	("00", "PDF", 1),
-    JPG	("01", "JPG", 2),
-	TIFF("02", "TIFF", 3),
-	BMP	("03", "BMP", 4),
-	PNG	("04", "PNG", 5);
+    PDF			("00", "PDF", 		1),
+    JPG			("01", "JPG", 		2),
+	TIFF		("02", "TIFF", 		3),
+	BMP			("03", "BMP", 		4),
+	PNG			("04", "PNG", 		5),
+	TIFF_JPEG	("05", "TIFF_JPEG", 6)
+	;
 
     private String code;
 

@@ -72,7 +72,8 @@ public class RequestHandler extends ChannelInboundHandlerAdapter {
 			}		
 		}
 		
-		
+		// ByteBuf release
+		mBuf.release();
 	}
 
 	@Override

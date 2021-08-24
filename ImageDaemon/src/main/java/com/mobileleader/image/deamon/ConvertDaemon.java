@@ -87,7 +87,6 @@ public class ConvertDaemon {
 		convertExecutor.setMaxPoolSize(threadChangeCount);
 		
 		log.info("Thread core pool size : {}", convertExecutor.getCorePoolSize());
-		log.info("Thread max pool size : {}", convertExecutor.getMaxPoolSize());
 	}
 
 	/**

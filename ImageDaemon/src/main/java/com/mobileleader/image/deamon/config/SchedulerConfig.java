@@ -22,11 +22,11 @@ public class SchedulerConfig {
 		// pool size가 처음에는 0인데 10으로 설정한 경우  core pool size가 10이 최과되면 keepAliveSeconds 시간 이후에
 		// thread를 kill 하는데 core pool size 이하로는 kill을 하지 않는다. pool size가 10 이상이 된 이후로는
 		// 최소 10 pool size를 계속 유지한다.
-		convertExecutor.setCorePoolSize(8);
+		convertExecutor.setCorePoolSize(6);
 		
 		// 최대 pool size 지정. 기본값 Integer.MAX, 기본적으로 core pool size 안에서 해결하고
 		// core pool size + queue capacity를 넘는 요청이 왔을 때만 max pool size 안에서 pool을 생성한다.
-		convertExecutor.setMaxPoolSize(8);
+		convertExecutor.setMaxPoolSize(6);
 		
 		// 대기열 size 지정. 기본값 Integer.MAX, 0으로 설정한 경우 queue type이 SynchronousQueue를, 0 초과로 설정한 경우
 		// LinkedBlockingQueue를 생성한다.

@@ -77,7 +77,7 @@ public class ImageConvertServiceImpl extends ImageConvertServiceAbstract {
 				log.info("[{}] convert {} to {}", jobId, FilenameUtils.getExtension(srcPath).toUpperCase(), ResultExtentionType.getByCode(rstType).getDescription());
 				
 				// PDF -> IMAGE
-				convertPdftoImage(srcPath, desDirPath, desFileName, rstType);
+				convertPdfToImage(srcPath, desDirPath, desFileName, rstType);
 				
 				if (totalCount == 1) {
 					// JPG -> PNG
