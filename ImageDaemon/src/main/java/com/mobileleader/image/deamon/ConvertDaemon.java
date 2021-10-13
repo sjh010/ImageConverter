@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.annotation.PostConstruct;
 
@@ -49,12 +50,13 @@ public class ConvertDaemon {
 	@Autowired
 	private ImageConvertOutboundClient imageConvertOutboundClient;		// 배치 요청 응답을 위한 client
 	
-	private PriorityQueue<ConvertRequest> requestQueue;					// 이미지 변환 요청 큐(우선순위 큐)
+//	private PriorityQueue<ConvertRequest> requestQueue;					// 이미지 변환 요청 큐(우선순위 큐)
+	private PriorityBlockingQueue<ConvertRequest> requestQueue;					// 이미지 변환 요청 큐(우선순위 큐)
 	
 	private Map<String, ChannelFuture> channelFutureMap;				// 이미지 요청 JOB ID별 응답을 위한 ChannelFuture Map
 	
 	public ConvertDaemon() {
-		this.requestQueue = new PriorityQueue<ConvertRequest>();
+		this.requestQueue = new PriorityBlockingQueue<ConvertRequest>();
 		this.channelFutureMap = new HashMap<String, ChannelFuture>();
 	}
 	

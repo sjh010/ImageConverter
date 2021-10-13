@@ -170,6 +170,14 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 			throw new ImageConvertException(ResponseCodeType.INVALID_RST_TYPE.getCode());
 		}
 		
+		result = imageIOJNI.changeColor_FILE(srcPath, 24, 2, desPath, 50, fileType, compType);
+		
+		if (result < 0) {
+			throw new ImageConvertException(getErrorCode(result));
+		}
+		
+		srcPath = desPath;
+		
 		if (!ObjectUtils.isEmpty(maskingInfos)) { // 이미지 마스킹
 			for (IcMaskingInfo maskInfo : maskingInfos) {
 				result = imageIOJNI.maskImage_FILE(srcPath, maskInfo.getX(), maskInfo.getY(), maskInfo.getWidth(), maskInfo.getHeight(), 
@@ -182,7 +190,7 @@ public abstract class ImageConvertServiceAbstract implements ImageConvertService
 				srcPath = desPath;
 			}
 		} else {
-			result = imageIOJNI.convertFormat_FILE(srcPath, fileType, compType, 0, 1, 4, 0, 0, 0, desPath);
+//			result = imageIOJNI.convertFormat_FILE(srcPath, fileType, compType, 0, 1, 4, 0, 0, 0, desPath);
 		}
 
 		if (result < 0) {
