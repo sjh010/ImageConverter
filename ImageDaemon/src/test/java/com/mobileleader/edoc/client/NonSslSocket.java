@@ -11,10 +11,17 @@ public class NonSslSocket {
 
 	 private String host;
 	    private int port;
+	    
+	    private boolean isEnd;
 
-	    public NonSslSocket(String host2, int port2) {
+	    public boolean isEnd() {
+			return isEnd;
+		}
+
+		public NonSslSocket(String host2, int port2) {
 	    	this.host = host2;
 	    	this.port = port2;
+	    	isEnd = false;
 		}
 
 		public void run(ConvertRequest request) {
@@ -25,7 +32,7 @@ public class NonSslSocket {
 
 	            ClientSocket clientSocket = new ClientSocket(socket);
 	            clientSocket.sendRequest(request);
-	            
+	            isEnd = true;
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
